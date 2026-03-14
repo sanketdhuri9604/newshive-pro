@@ -3,12 +3,34 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import NewsCard from '@/components/news/NewsCard'
-import { Search, TrendingUp, GitCompare, X, Zap, Flame } from 'lucide-react'
+import { Search, TrendingUp, GitCompare, X, Zap, Flame, RefreshCw } from 'lucide-react'
 import { useLang } from '@/components/shared/LangProvider'
 import toast from 'react-hot-toast'
 import type { Article } from '@/lib/types'
 
 const PAGE_SIZE = 12
+const CACHE_TTL = 30 * 60 * 1000 // 30 minutes
+
+function getLocalCache(key: string): { articles: Article[]; timestamp: number } | null {
+  try {
+    const raw = localStorage.getItem(key)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (Date.now() - parsed.timestamp > CACHE_TTL) {
+      localStorage.removeItem(key)
+      return null
+    }
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+function setLocalCache(key: string, articles: Article[]) {
+  try {
+    localStorage.setItem(key, JSON.stringify({ articles, timestamp: Date.now() }))
+  } catch {}
+}
 
 export default function HomePage() {
   const { t, lang } = useLang()
@@ -21,6 +43,8 @@ export default function HomePage() {
   const [searchInput, setSearchInput] = useState('')
   const [compareList, setCompareList] = useState<Article[]>([])
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
 
   const CATEGORIES = [
     { id: 'general', label: t('categories.general') },
@@ -32,31 +56,54 @@ export default function HomePage() {
     { id: 'world', label: t('categories.world') },
   ]
 
-  const fetchNews = async (cat: string, q: string = '') => {
-  setLoading(true)
-  setError('')
-  try {
-    const params = new URLSearchParams({ category: cat, lang })
-    if (q) params.set('q', q)
-    const res = await fetch(`/api/news?${params}`)
-    if (!res.ok) throw new Error('Failed to fetch')
-    const data = await res.json()
-    setArticles(data.articles || [])
-    setVisibleCount(PAGE_SIZE)
-  } catch {
-    setArticles([])
-    setError('Failed to load news. Please try again.')
-    toast.error('Failed to fetch news')
-  } finally {
-    setLoading(false)
-  }
-}
+  const fetchNews = async (cat: string, q: string = '', forceRefresh = false) => {
+    const cacheKey = `news-${lang}-${cat}-${q}`
 
-  useEffect(() => { 
-  setArticles([])
-  setLoading(true)
-  fetchNews(category, query) 
-}, [category, lang]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (!forceRefresh && !q) {
+      const cached = getLocalCache(cacheKey)
+      if (cached) {
+        setArticles(cached.articles)
+        setLastUpdated(cached.timestamp)
+        setLoading(false)
+        setRefreshing(false)
+        return
+      }
+    }
+
+    setLoading(true)
+    setError('')
+    try {
+      const params = new URLSearchParams({ category: cat, lang })
+      if (q) params.set('q', q)
+      const res = await fetch(`/api/news?${params}`)
+      if (!res.ok) throw new Error('Failed to fetch')
+      const data = await res.json()
+      const fetched = data.articles || []
+      if (!q) setLocalCache(cacheKey, fetched)
+      setArticles(fetched)
+      setLastUpdated(Date.now())
+      setVisibleCount(PAGE_SIZE)
+    } catch {
+      setArticles([])
+      setError('Failed to load news. Please try again.')
+      toast.error('Failed to fetch news')
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }
+
+  useEffect(() => {
+    setArticles([])
+    setLoading(true)
+    fetchNews(category, query)
+  }, [category, lang]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleRefresh = () => {
+    setRefreshing(true)
+    toast.success('Fetching fresh news...')
+    fetchNews(category, query, true)
+  }
 
   const handleSearch = () => { setQuery(searchInput); fetchNews(category, searchInput) }
 
@@ -91,6 +138,14 @@ export default function HomePage() {
     router.push(`/news?${params.toString()}`)
   }
 
+  const getLastUpdatedLabel = () => {
+    if (!lastUpdated) return ''
+    const diff = Math.floor((Date.now() - lastUpdated) / 60000)
+    if (diff < 1) return 'just now'
+    if (diff === 1) return '1 min ago'
+    return `${diff} min ago`
+  }
+
   const hero = articles[0]
   const sideArticles = articles.slice(1, 4)
   const gridArticles = articles.slice(4, visibleCount)
@@ -101,25 +156,43 @@ export default function HomePage() {
 
       {/* ── HERO HEADER ── */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent-red/10 border border-accent-red/20">
             <span className="w-1.5 h-1.5 rounded-full bg-accent-red animate-pulse-slow" />
             <span className="text-xs font-bold text-accent-red tracking-widest">LIVE</span>
           </div>
           <span className="text-text-muted text-xs tracking-wider">⚡ AI-POWERED EDITION</span>
+
+          {/* Last Updated + Refresh */}
+          <div className="ml-auto flex items-center gap-3">
+            {lastUpdated && !loading && (
+              <span className="text-text-muted text-xs hidden sm:block">
+                Updated {getLastUpdatedLabel()}
+              </span>
+            )}
+            <button
+              onClick={handleRefresh}
+              disabled={loading || refreshing}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-white/10 text-text-muted hover:text-text-primary hover:border-white/20 transition-all disabled:opacity-40"
+            >
+              <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />
+              {refreshing ? 'Refreshing...' : '🔄 Refresh'}
+            </button>
+          </div>
         </div>
-       <h1 className="font-display text-[80px] md:text-[120px] leading-none tracking-wider">
-  {t('home.todaysBriefing').split(' ').slice(0, -1).join(' ')}<br />
-  <span style={{
-    background: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 50%, #06B6D4 100%)',
-    backgroundSize: '200% 200%',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    animation: 'gradShift 4s ease infinite',
-  }}>
-    {t('home.todaysBriefing').split(' ').slice(-1)[0]}
-  </span>
-</h1>
+
+        <h1 className="font-display text-[80px] md:text-[120px] leading-none tracking-wider">
+          {t('home.todaysBriefing').split(' ').slice(0, -1).join(' ')}<br />
+          <span style={{
+            background: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 50%, #06B6D4 100%)',
+            backgroundSize: '200% 200%',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            animation: 'gradShift 4s ease infinite',
+          }}>
+            {t('home.todaysBriefing').split(' ').slice(-1)[0]}
+          </span>
+        </h1>
       </div>
 
       {/* ── TICKER ── */}
@@ -143,53 +216,54 @@ export default function HomePage() {
           </div>
         </div>
       )}
-{/* ── AI FEATURES ── */}
-<div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-  {[
-  { icon: '🧠', label: t('ai.summary'), desc: t('ai.summaryUnavailable').slice(0,25) + '...', color: 'purple', onClick: () => toast(t('ai.summaryUnavailable'), { icon: '🧠' }) },
-  { icon: '💬', label: t('nav.aiChat'), desc: t('ui.aipowered').slice(0,20) + '...', color: 'cyan', onClick: () => router.push('/chatbot') },
-  { icon: '📊', label: t('nav.compare'), desc: t('nav.compare') + ' 2 ' + t('home.articles'), color: 'pink', onClick: () => router.push('/compare') },
-  { icon: '🔥', label: t('nav.trending'), desc: t('home.breaking') + '...', color: 'orange', onClick: () => router.push('/trending') },
-].map((f, i) => (
-    <div key={i}
-      onClick={f.onClick}
-      className="rounded-2xl p-4 cursor-pointer animate-float"
-      style={{
-        background: f.color === 'purple' ? 'rgba(139,92,246,0.06)' :
-          f.color === 'cyan' ? 'rgba(6,182,212,0.06)' :
-          f.color === 'pink' ? 'rgba(236,72,153,0.06)' : 'rgba(249,115,22,0.06)',
-        border: `1px solid ${f.color === 'purple' ? 'rgba(139,92,246,0.25)' :
-          f.color === 'cyan' ? 'rgba(6,182,212,0.25)' :
-          f.color === 'pink' ? 'rgba(236,72,153,0.25)' : 'rgba(249,115,22,0.25)'}`,
-        backdropFilter: 'blur(12px)',
-        animationDelay: `${i * 0.5}s`,
-        transition: 'all 0.2s',
-      }}
-      onMouseEnter={e => {
-        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-6px) scale(1.02)'
-        ;(e.currentTarget as HTMLDivElement).style.boxShadow = f.color === 'purple' ? '0 10px 40px rgba(139,92,246,0.25)' :
-          f.color === 'cyan' ? '0 10px 40px rgba(6,182,212,0.25)' :
-          f.color === 'pink' ? '0 10px 40px rgba(236,72,153,0.25)' : '0 10px 40px rgba(249,115,22,0.25)'
-      }}
-      onMouseLeave={e => {
-        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0) scale(1)'
-        ;(e.currentTarget as HTMLDivElement).style.boxShadow = 'none'
-      }}
-    >
-      <div className="text-2xl mb-2">{f.icon}</div>
-      <div className="font-semibold text-sm text-text-primary mb-0.5">{f.label}</div>
-      <div className="text-[11px] text-text-muted leading-relaxed">{f.desc}</div>
-      <div className="mt-3 text-[10px] font-bold tracking-wider"
-        style={{
-          color: f.color === 'purple' ? '#8B5CF6' :
-            f.color === 'cyan' ? '#06B6D4' :
-            f.color === 'pink' ? '#EC4899' : '#F97316'
-        }}>
-        {f.color === 'purple' ? t('card.readMore') + ' →' : t('ui.submit').slice(0,4) + ' →'}
+
+      {/* ── AI FEATURES ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        {[
+          { icon: '🧠', label: t('ai.summary'), desc: t('ai.summaryUnavailable').slice(0,25) + '...', color: 'purple', onClick: () => toast(t('ai.summaryUnavailable'), { icon: '🧠' }) },
+          { icon: '💬', label: t('nav.aiChat'), desc: t('ui.aipowered').slice(0,20) + '...', color: 'cyan', onClick: () => router.push('/chatbot') },
+          { icon: '📊', label: t('nav.compare'), desc: t('nav.compare') + ' 2 ' + t('home.articles'), color: 'pink', onClick: () => router.push('/compare') },
+          { icon: '🔥', label: t('nav.trending'), desc: t('home.breaking') + '...', color: 'orange', onClick: () => router.push('/trending') },
+        ].map((f, i) => (
+          <div key={i}
+            onClick={f.onClick}
+            className="rounded-2xl p-4 cursor-pointer animate-float"
+            style={{
+              background: f.color === 'purple' ? 'rgba(139,92,246,0.06)' :
+                f.color === 'cyan' ? 'rgba(6,182,212,0.06)' :
+                f.color === 'pink' ? 'rgba(236,72,153,0.06)' : 'rgba(249,115,22,0.06)',
+              border: `1px solid ${f.color === 'purple' ? 'rgba(139,92,246,0.25)' :
+                f.color === 'cyan' ? 'rgba(6,182,212,0.25)' :
+                f.color === 'pink' ? 'rgba(236,72,153,0.25)' : 'rgba(249,115,22,0.25)'}`,
+              backdropFilter: 'blur(12px)',
+              animationDelay: `${i * 0.5}s`,
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-6px) scale(1.02)'
+              ;(e.currentTarget as HTMLDivElement).style.boxShadow = f.color === 'purple' ? '0 10px 40px rgba(139,92,246,0.25)' :
+                f.color === 'cyan' ? '0 10px 40px rgba(6,182,212,0.25)' :
+                f.color === 'pink' ? '0 10px 40px rgba(236,72,153,0.25)' : '0 10px 40px rgba(249,115,22,0.25)'
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0) scale(1)'
+              ;(e.currentTarget as HTMLDivElement).style.boxShadow = 'none'
+            }}
+          >
+            <div className="text-2xl mb-2">{f.icon}</div>
+            <div className="font-semibold text-sm text-text-primary mb-0.5">{f.label}</div>
+            <div className="text-[11px] text-text-muted leading-relaxed">{f.desc}</div>
+            <div className="mt-3 text-[10px] font-bold tracking-wider"
+              style={{
+                color: f.color === 'purple' ? '#8B5CF6' :
+                  f.color === 'cyan' ? '#06B6D4' :
+                  f.color === 'pink' ? '#EC4899' : '#F97316'
+              }}>
+              {f.color === 'purple' ? t('card.readMore') + ' →' : t('ui.submit').slice(0,4) + ' →'}
+            </div>
+          </div>
+        ))}
       </div>
-    </div>
-  ))}
-</div>
 
       {/* ── SEARCH + CATEGORIES ── */}
       <div className="mb-8 space-y-3">
@@ -198,7 +272,7 @@ export default function HomePage() {
             <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
             <input
               className="input-field pl-11"
-            placeholder={t('home.searchPlaceholder')}
+              placeholder={t('home.searchPlaceholder')}
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
@@ -207,9 +281,8 @@ export default function HomePage() {
           <button onClick={handleSearch}
             className="px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all hover:shadow-glow-purple"
             style={{ background: 'linear-gradient(135deg, #8B5CF6, #EC4899)' }}>
-           
-  {t('home.search')}
-</button>
+            {t('home.search')}
+          </button>
         </div>
         <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
           {CATEGORIES.map(cat => (
@@ -256,10 +329,7 @@ export default function HomePage() {
       {/* ── MAIN LAYOUT ── */}
       {!loading && !query && articles.length > 0 && (
         <>
-          {/* Featured + Side */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
-
-            {/* Hero card */}
             {hero && (
               <div
                 onClick={() => goToArticle(hero)}
@@ -292,8 +362,6 @@ export default function HomePage() {
                 </div>
               </div>
             )}
-
-            {/* Side cards */}
             <div className="flex flex-col gap-4">
               {sideArticles.map((article, i) => (
                 <div key={i}
@@ -318,14 +386,12 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Section label */}
           <div className="flex items-center gap-3 mb-5">
             <div className="w-6 h-0.5 rounded-full" style={{ background: 'linear-gradient(to right, #8B5CF6, #EC4899)' }} />
             <span className="text-[11px] font-black tracking-widest uppercase text-accent-purple">More Stories</span>
             <div className="flex-1 h-px" style={{ background: 'linear-gradient(to right, rgba(139,92,246,0.3), transparent)' }} />
           </div>
 
-          {/* Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {gridArticles.map((article, i) => (
               <NewsCard key={i} article={article} index={i}
@@ -335,7 +401,6 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Load More */}
           {hasMore && (
             <div className="text-center mt-8">
               <button
@@ -417,7 +482,6 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Footer */}
       <div className="mt-16 pt-6 border-t border-white/5 text-center">
         <p className="text-text-muted text-xs tracking-widest font-mono uppercase">
           © NewsHive Pro · AI-Powered · Built for Eternia
