@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/shared/AuthProvider'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
-import { MessageSquare, Trash2, ExternalLink, Search } from 'lucide-react'
+import { Trash2, ExternalLink, Search } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface Comment {
@@ -12,6 +12,10 @@ interface Comment {
   news_url: string
   content: string
   created_at: string
+  title?: string
+  description?: string
+  image?: string
+  source?: string
 }
 
 export default function MyCommentsPage() {
@@ -28,13 +32,41 @@ export default function MyCommentsPage() {
   const fetchComments = async () => {
     setLoading(true)
     try {
-      const { data } = await supabase
+      const { data: commentsData } = await supabase
         .from('comments')
         .select('id, news_url, content, created_at')
         .eq('user_id', user!.id)
         .eq('is_toxic', false)
         .order('created_at', { ascending: false })
-      setComments(data || [])
+
+      if (!commentsData?.length) { setComments([]); return }
+
+     const urls = Array.from(new Set(commentsData.map(c => c.news_url)))
+      const { data: historyData } = await supabase
+        .from('reading_history')
+        .select('news_url, title')
+        .eq('user_id', user!.id)
+        .in('news_url', urls)
+
+      const { data: savedData } = await supabase
+        .from('saved_news')
+        .select('url, title, description, image_url, source')
+        .eq('user_id', user!.id)
+        .in('url', urls)
+
+      const enriched = commentsData.map(c => {
+        const history = historyData?.find(h => h.news_url === c.news_url)
+        const saved = savedData?.find(s => s.url === c.news_url)
+        return {
+          ...c,
+          title: saved?.title || history?.title || '',
+          description: saved?.description || '',
+          image: saved?.image_url || '',
+          source: saved?.source || '',
+        }
+      })
+
+      setComments(enriched)
     } catch {}
     finally { setLoading(false) }
   }
@@ -49,8 +81,14 @@ export default function MyCommentsPage() {
     }
   }
 
-  const openArticle = (newsUrl: string) => {
-    const params = new URLSearchParams({ url: newsUrl })
+  const openArticle = (comment: Comment) => {
+    const params = new URLSearchParams({
+      url: comment.news_url,
+      title: comment.title || '',
+      description: comment.description || '',
+      image: comment.image || '',
+      source: comment.source || '',
+    })
     router.push(`/news?${params.toString()}`)
   }
 
@@ -98,6 +136,14 @@ export default function MyCommentsPage() {
         <div className="space-y-4">
           {filtered.map(comment => (
             <div key={comment.id} className="glass rounded-2xl border border-white/10 p-5 hover:border-accent-cyan/30 transition-all">
+
+              {/* Article title agar available ho */}
+              {comment.title && (
+                <p className="text-accent-cyan text-xs font-semibold mb-2 truncate">
+                  📰 {comment.title}
+                </p>
+              )}
+
               {/* Comment content */}
               <p className="text-text-primary text-sm leading-relaxed mb-4">
                 "{comment.content}"
@@ -112,11 +158,13 @@ export default function MyCommentsPage() {
                   })}
                 </p>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => openArticle(comment.news_url)}
+                  <button
+                    onClick={() => openArticle(comment)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs border border-white/10 text-text-muted hover:text-text-primary hover:border-white/20 transition-all">
                     <ExternalLink size={11} /> View Article
                   </button>
-                  <button onClick={() => deleteComment(comment.id)}
+                  <button
+                    onClick={() => deleteComment(comment.id)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs border border-accent-red/20 text-accent-red hover:bg-accent-red/10 transition-all">
                     <Trash2 size={11} /> Delete
                   </button>
