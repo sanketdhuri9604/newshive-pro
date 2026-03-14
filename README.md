@@ -1,89 +1,221 @@
-# 📰 NewsHive Pro — Next.js
+# ⚡ NewsHive Pro
 
-AI-powered news intelligence platform. Built for Eternia 🏆
+<div align="center">
+
+![NewsHive Pro](https://img.shields.io/badge/NewsHive-Pro-8B5CF6?style=for-the-badge&logo=lightning&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![Groq AI](https://img.shields.io/badge/Groq-AI-F55036?style=for-the-badge)
+
+**AI-Powered News Intelligence Platform**
+
+*Real news. AI clarity. No noise.*
+
+[🌐 Live Demo](https://newshive-pro.vercel.app) · [📸 Screenshots](#screenshots) · [🚀 Features](#features) · [🛠️ Tech Stack](#tech-stack)
+
+</div>
+
+---
+
+## 📖 About
+
+NewsHive Pro is a full-stack AI-powered news platform built for the modern reader. It aggregates real-time news from multiple sources and uses Groq's LLaMA AI to provide intelligent analysis — including fake news detection, sentiment analysis, bias detection, and smart summaries — all in one place.
+
+Built as a college exhibition project to demonstrate the integration of modern web technologies with AI capabilities.
+
+---
 
 ## ✨ Features
-- 🤖 **7 AI features** powered by Groq (fastest LLM inference)
-- 📰 **News from RSS + NewsAPI** — zero limits on RSS feeds
-- 🔥 **Reactions, Comments** with AI toxicity filter
-- 💬 **Real-time chat** via Supabase
-- 🆚 **News Comparison** — side-by-side bias analysis
-- 📊 **Trending Analysis** — AI explains why topics are viral
-- 🧠 **Quiz Generator** — test knowledge from any article
-- 🌐 **Translation** to 8 languages
 
-## 🛠️ Tech Stack (All Free Tier)
-| Service | Purpose | Free Tier |
-|---------|---------|-----------|
-| Next.js 14 | Full-stack framework | Free |
-| Vercel | Deployment | Free |
-| Supabase | DB + Auth + Realtime | 500MB free |
-| Groq | AI (LLaMA 3.3) | ~14k req/day free |
-| Cloudinary | Image upload | 25GB free |
-| RSS Feeds | News (BBC etc.) | Unlimited free |
-| Resend | Email newsletter | 3k/month free |
+### 🤖 AI-Powered Analysis
+- **AI Summary** — 3-point summary of any article instantly
+- **Sentiment Analysis** — Positive/Negative/Neutral detection with confidence score
+- **Credibility Score** — Fake news detection with detailed explainer
+- **Bias Meter** — Left/Center/Right political bias detection
+- **News Quiz** — Auto-generated quiz from article content
+- **Translate Article** — Translate to 10+ Indian languages
+- **Ask AI** — Chat with AI about any article
+- **Debate Mode** — AI generates both sides of any argument
+- **News Timeline** — Chronological story of any topic
 
-## 🚀 Setup
+### 📰 News Features
+- **Multi-source Feed** — Real-time news from GNews & NewsAPI
+- **Category Filtering** — 7+ news categories
+- **Search with History** — Smart search with recent history
+- **Related Articles** — AI-powered similar article suggestions
+- **Breaking News Ticker** — Live scrolling headlines
+- **For You Feed** — Personalized based on reading history & followed topics
 
-### 1. Clone & Install
+### 👤 User Features
+- **Reading History** — Track every article you've read
+- **Save Articles** — Bookmark articles for later
+- **Personal Notes** — Add private notes to any article
+- **Reading Streak** — Daily streak tracker like Duolingo
+- **Reading Goals** — Set daily & weekly reading targets
+- **Topics Follow** — Follow topics to personalize your feed
+- **Community Feed** — Share articles with the community
+- **Like System** — Like community shares
+
+### 🎮 Gamification
+- **Badges & Achievements** — 15+ unlockable badges
+- **Daily Challenge** — New article + quiz every day
+- **Quiz Leaderboard** — Compete with other readers
+- **Reading Analytics** — GitHub-style activity heatmap
+
+### 💅 UI/UX
+- **Collapsible Sidebar** — Clean left navigation
+- **Multi-language Support** — English + 10 Indian languages
+- **Mobile Responsive** — Works on all devices
+- **Dark Theme** — Easy on the eyes
+- **Onboarding Flow** — Smooth new user experience
+
+---
+
+## 🛠️ Tech Stack
+
+| Category | Technology |
+|----------|-----------|
+| **Framework** | Next.js 14 (App Router) |
+| **Language** | TypeScript |
+| **Styling** | Tailwind CSS |
+| **Database** | Supabase (PostgreSQL) |
+| **Auth** | Supabase Auth |
+| **AI** | Groq API (LLaMA 3.1) |
+| **News API** | GNews API + NewsAPI |
+| **Deployment** | Vercel |
+| **Icons** | Lucide React |
+| **Notifications** | React Hot Toast |
+
+---
+
+## 🗄️ Database Schema
+
+```
+profiles          — User profiles (username, bio, topics, goals)
+reading_history   — Articles read by each user
+saved_news        — Bookmarked articles
+comments          — Article discussions (AI moderated)
+article_notes     — Personal notes on articles
+community_shares  — Shared articles in community feed
+community_likes   — Likes on community shares
+quiz_scores       — Quiz results for leaderboard
+user_badges       — Earned badges per user
+daily_challenges  — Daily challenge articles
+challenge_completions — User challenge completions
+reading_goals     — Daily/weekly reading targets
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- Supabase account
+- Groq API key
+- GNews API key
+
+### Installation
+
 ```bash
-git clone <your-repo>
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/newshive-pro.git
 cd newshive-pro
+
+# Install dependencies
 npm install
-```
 
-### 2. Environment Variables
-```bash
+# Set up environment variables
 cp .env.example .env.local
-# Fill in your keys
 ```
 
-### 3. Supabase Setup
-- Run `supabase-migration-001.sql` (existing schema)
-- Run `supabase-migration-002.sql` (new tables: reactions, reading_history, newsletter_subs)
+### Environment Variables
 
-### 4. Get API Keys (all free)
-- **Groq**: https://console.groq.com → API Keys
-- **NewsAPI**: https://newsapi.org/register
-- **Cloudinary**: https://cloudinary.com (use existing account)
-- **Resend**: https://resend.com
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+GROQ_API_KEY=your_groq_api_key
+GNEWS_API_KEY=your_gnews_api_key
+NEWS_API_KEY=your_newsapi_key
+```
 
-### 5. Run Dev Server
+### Run Development Server
+
 ```bash
 npm run dev
-# Open http://localhost:3000
 ```
 
-### 6. Deploy to Vercel
-```bash
-npx vercel
-# Set all env variables in Vercel dashboard
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## 📁 Project Structure
+
+```
+newshive-next/
+├── app/
+│   ├── (pages)/          # All page routes
+│   │   ├── analytics/
+│   │   ├── badges/
+│   │   ├── challenge/
+│   │   ├── chatbot/
+│   │   ├── community/
+│   │   ├── compare/
+│   │   ├── debate/
+│   │   ├── foryou/
+│   │   ├── history/
+│   │   ├── leaderboard/
+│   │   ├── news/
+│   │   ├── notes/
+│   │   ├── onboarding/
+│   │   ├── profile/
+│   │   ├── saved/
+│   │   ├── search/
+│   │   ├── timeline/
+│   │   └── trending/
+│   └── api/
+│       ├── ai/           # AI API routes (Groq)
+│       └── news/         # News aggregation API
+├── components/
+│   ├── ai/               # AI components (QuizModal etc.)
+│   ├── news/             # News components (NewsCard etc.)
+│   ├── shared/           # Shared components (Navbar, Auth etc.)
+│   └── ui/               # UI components
+└── lib/                  # Utilities & configs
 ```
 
-## 📁 Structure
-```
-app/
-├── page.tsx              ← Home feed
-├── (auth)/               ← Login, Register
-├── (main)/news/          ← Article detail + AI
-├── (main)/compare/       ← News comparison
-├── (main)/trending/      ← Trending analysis
-├── (main)/chatbot/       ← AI chatbot
-├── (main)/saved/         ← Bookmarks
-├── api/                  ← All backend routes
-components/
-├── news/                 ← NewsCard, Feed
-├── ai/                   ← QuizModal, AI components
-├── ui/                   ← ReactionBar, Comments
-└── shared/               ← Navbar, AuthProvider
-lib/
-├── groq.ts               ← All AI functions
-├── supabase.ts           ← Client
-└── cloudinary.ts         ← Image upload
-```
+---
 
-## 🤖 Groq Model Strategy
-| Model | Used For |
-|-------|---------|
-| `llama-3.3-70b-versatile` | Summary, Chatbot, Translation, Comparison, Trending |
-| `llama-3.1-8b-instant` | Sentiment, Fake Detect, Bias, Quiz, Toxicity, Reading Time |
+## 🤖 AI Features Deep Dive
+
+NewsHive Pro uses **Groq's LLaMA 3.1** model for all AI features:
+
+| Feature | Model | Avg Response Time |
+|---------|-------|------------------|
+| Summary | llama-3.1-8b-instant | ~1.2s |
+| Sentiment | llama-3.1-8b-instant | ~0.8s |
+| Fake Detection | llama-3.1-8b-instant | ~1.5s |
+| Bias Analysis | llama-3.1-8b-instant | ~1.0s |
+| Quiz Generation | llama-3.1-8b-instant | ~2.0s |
+| Debate Mode | llama-3.1-8b-instant | ~3.0s |
+| Timeline | llama-3.1-8b-instant | ~3.5s |
+
+---
+
+## 👨‍💻 Author
+
+**Sanket** — College Exhibition Project
+
+---
+
+## 📄 License
+
+This project is for educational purposes as part of a college exhibition.
+
+---
+
+<div align="center">
+  <p>Built with ❤️ using Next.js, Supabase & Groq AI</p>
+  <p>⚡ NewsHive Pro — Real news. AI clarity. No noise.</p>
+</div>
