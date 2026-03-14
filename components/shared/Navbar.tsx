@@ -9,7 +9,7 @@ import LanguageSelector from './LanguageSelector'
 import {
   Zap, Home, Flame, GitCompare, Bot, Bookmark,
   User, LogOut, Menu, X, ChevronDown, Search, Sparkles, Clock,
-  Trophy, Users, BarChart2, StickyNote, Swords, Calendar, Target, Medal
+  Trophy, Users, BarChart2, StickyNote, Swords, Calendar, Target, Medal, MessageSquare
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
@@ -84,6 +84,10 @@ export default function Navbar() {
                   <Link href="/notes" onClick={() => setProfileOpen(false)}
                     className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-text-secondary hover:bg-white/5 hover:text-text-primary transition-all w-full">
                     <StickyNote size={14} /> My Notes
+                  </Link>
+                  <Link href="/my-comments" onClick={() => setProfileOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-text-secondary hover:bg-white/5 hover:text-text-primary transition-all w-full">
+                    <MessageSquare size={14} /> My Comments
                   </Link>
                   <Link href="/analytics" onClick={() => setProfileOpen(false)}
                     className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-text-secondary hover:bg-white/5 hover:text-text-primary transition-all w-full">

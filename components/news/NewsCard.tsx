@@ -24,7 +24,6 @@ export default function NewsCard({ article, index, onCompareSelect, isSelectedFo
   const [saving, setSaving] = useState(false)
   const [imgError, setImgError] = useState(false)
 
-  // Sync saved state on mount
   useEffect(() => {
     if (!user || !article.url) return
     supabase.from('saved_news')
@@ -144,8 +143,8 @@ export default function NewsCard({ article, index, onCompareSelect, isSelectedFo
           </span>
         </div>
 
-        {/* Action buttons */}
-        <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Action buttons — always visible on mobile, hover on desktop */}
+        <div className="absolute top-3 right-3 flex gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           {onCompareSelect && (
             <button
               onClick={handleCompare}

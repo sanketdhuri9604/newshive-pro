@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/shared/AuthProvider'
 import { supabase } from '@/lib/supabase'
-import { Heart, Share2, ExternalLink, Users } from 'lucide-react'
+import { Heart, ExternalLink, Users, Trash2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 
 interface Share {
@@ -23,9 +24,21 @@ interface Share {
 
 export default function CommunityPage() {
   const { user } = useAuth()
+  const router = useRouter()
   const [shares, setShares] = useState<Share[]>([])
   const [loading, setLoading] = useState(true)
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set())
+
+  const openArticle = (share: Share) => {
+    const params = new URLSearchParams({
+      title: share.title || '',
+      description: share.description || '',
+      url: share.news_url || '',
+      image: share.image || '',
+      source: share.source || '',
+    })
+    router.push(`/news?${params.toString()}`)
+  }
 
   useEffect(() => {
     fetchShares()
@@ -52,6 +65,16 @@ export default function CommunityPage() {
       }
     } catch {}
     finally { setLoading(false) }
+  }
+
+  const deleteShare = async (shareId: string) => {
+    try {
+      await supabase.from('community_shares').delete().eq('id', shareId).eq('user_id', user!.id)
+      setShares(prev => prev.filter(s => s.id !== shareId))
+      toast.success('Post deleted!')
+    } catch {
+      toast.error('Could not delete post')
+    }
   }
 
   const toggleLike = async (share: Share) => {
@@ -163,10 +186,16 @@ export default function CommunityPage() {
                     <Heart size={12} className={likedIds.has(share.id) ? 'fill-accent-pink' : ''} />
                     {share.likes}
                   </button>
-                  <a href={share.news_url} target="_blank" rel="noopener noreferrer"
+                  <button onClick={(e) => { e.stopPropagation(); openArticle(share) }}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-white/10 text-text-muted hover:border-white/20 hover:text-text-primary transition-all">
                     <ExternalLink size={12} /> Read Article
-                  </a>
+                  </button>
+                  {user?.id === share.user_id && (
+                    <button onClick={() => deleteShare(share.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-accent-red/20 text-accent-red hover:bg-accent-red/10 transition-all ml-auto">
+                      <Trash2 size={12} /> Delete
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

@@ -11,7 +11,6 @@ export default function LanguageSelector() {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
-  // Close on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
@@ -34,7 +33,8 @@ export default function LanguageSelector() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-52 glass rounded-2xl border border-white/10 shadow-glow-purple z-50 overflow-hidden animate-fade-in">
+        <div className="absolute right-0 top-full mt-2 w-52 rounded-2xl border border-white/10 shadow-xl z-50 overflow-hidden"
+          style={{ background: 'var(--color-bg-card, #0d0d20)', backdropFilter: 'blur(20px)' }}>
           {/* Header */}
           <div className="px-3 py-2 border-b border-white/5">
             <p className="text-xs text-text-muted font-mono">{t('ui.chooseLanguage')}</p>

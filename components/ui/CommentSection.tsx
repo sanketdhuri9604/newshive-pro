@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { getSupabase } from '@/lib/supabase'
 import { useAuth } from '../shared/AuthProvider'
-import { Send, Loader2, ShieldAlert, ChevronUp, ChevronDown } from 'lucide-react'
+import { Send, Loader2, ShieldAlert, ChevronUp, ChevronDown, Trash2 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import type { Comment } from '@/lib/types'
@@ -57,6 +57,16 @@ export default function CommentSection({ newsUrl }: { newsUrl: string }) {
       toast.error('Could not post comment. Try again.')
     }
     setPosting(false)
+  }
+
+  const deleteComment = async (commentId: string) => {
+    try {
+      await supabase.from('comments').delete().eq('id', commentId).eq('user_id', user!.id)
+      setComments(prev => prev.filter(c => c.id !== commentId))
+      toast.success('Comment deleted!')
+    } catch {
+      toast.error('Could not delete comment')
+    }
   }
 
   return (
@@ -113,6 +123,12 @@ export default function CommentSection({ newsUrl }: { newsUrl: string }) {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-medium text-text-primary">{c.profiles?.username || 'Anonymous'}</span>
                     <span className="text-xs text-text-muted">{formatDate(c.created_at)}</span>
+                    {user?.id === c.user_id && (
+                      <button onClick={() => deleteComment(c.id)}
+                        className="ml-auto text-text-muted hover:text-accent-red transition-colors">
+                        <Trash2 size={11} />
+                      </button>
+                    )}
                   </div>
                   <p className="text-sm text-text-secondary leading-relaxed">{c.content}</p>
                 </div>
