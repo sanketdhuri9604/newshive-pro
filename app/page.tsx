@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import NewsCard from '@/components/news/NewsCard'
-import { Search, TrendingUp, GitCompare, X, Zap, Flame, RefreshCw } from 'lucide-react'
+import { Search, TrendingUp, GitCompare, X, Zap, Flame } from 'lucide-react'
 import { useLang } from '@/components/shared/LangProvider'
 import toast from 'react-hot-toast'
 import type { Article } from '@/lib/types'
@@ -43,8 +43,6 @@ export default function HomePage() {
   const [searchInput, setSearchInput] = useState('')
   const [compareList, setCompareList] = useState<Article[]>([])
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
-  const [lastUpdated, setLastUpdated] = useState<number | null>(null)
-  const [refreshing, setRefreshing] = useState(false)
 
   const CATEGORIES = [
     { id: 'general', label: t('categories.general') },
@@ -63,9 +61,7 @@ export default function HomePage() {
       const cached = getLocalCache(cacheKey)
       if (cached) {
         setArticles(cached.articles)
-        setLastUpdated(cached.timestamp)
         setLoading(false)
-        setRefreshing(false)
         return
       }
     }
@@ -81,7 +77,6 @@ export default function HomePage() {
       const fetched = data.articles || []
       if (!q) setLocalCache(cacheKey, fetched)
       setArticles(fetched)
-      setLastUpdated(Date.now())
       setVisibleCount(PAGE_SIZE)
     } catch {
       setArticles([])
@@ -89,7 +84,6 @@ export default function HomePage() {
       toast.error('Failed to fetch news')
     } finally {
       setLoading(false)
-      setRefreshing(false)
     }
   }
 
@@ -98,12 +92,6 @@ export default function HomePage() {
     setLoading(true)
     fetchNews(category, query)
   }, [category, lang]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleRefresh = () => {
-    setRefreshing(true)
-    toast.success('Fetching fresh news...')
-    fetchNews(category, query, true)
-  }
 
   const handleSearch = () => { setQuery(searchInput); fetchNews(category, searchInput) }
 
@@ -138,14 +126,6 @@ export default function HomePage() {
     router.push(`/news?${params.toString()}`)
   }
 
-  const getLastUpdatedLabel = () => {
-    if (!lastUpdated) return ''
-    const diff = Math.floor((Date.now() - lastUpdated) / 60000)
-    if (diff < 1) return 'just now'
-    if (diff === 1) return '1 min ago'
-    return `${diff} min ago`
-  }
-
   const hero = articles[0]
   const sideArticles = articles.slice(1, 4)
   const gridArticles = articles.slice(4, visibleCount)
@@ -156,31 +136,13 @@ export default function HomePage() {
 
       {/* ── HERO HEADER ── */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4 flex-wrap">
+        <div className="flex items-center gap-3 mb-4">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent-red/10 border border-accent-red/20">
             <span className="w-1.5 h-1.5 rounded-full bg-accent-red animate-pulse-slow" />
             <span className="text-xs font-bold text-accent-red tracking-widest">LIVE</span>
           </div>
           <span className="text-text-muted text-xs tracking-wider">⚡ AI-POWERED EDITION</span>
-
-          {/* Last Updated + Refresh */}
-          <div className="ml-auto flex items-center gap-3">
-            {lastUpdated && !loading && (
-              <span className="text-text-muted text-xs hidden sm:block">
-                Updated {getLastUpdatedLabel()}
-              </span>
-            )}
-            <button
-              onClick={handleRefresh}
-              disabled={loading || refreshing}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-white/10 text-text-muted hover:text-text-primary hover:border-white/20 transition-all disabled:opacity-40"
-            >
-              <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />
-              {refreshing ? 'Refreshing...' : '🔄 Refresh'}
-            </button>
-          </div>
         </div>
-
         <h1 className="font-display text-[80px] md:text-[120px] leading-none tracking-wider">
           {t('home.todaysBriefing').split(' ').slice(0, -1).join(' ')}<br />
           <span style={{

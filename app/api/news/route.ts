@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkRateLimit } from '@/lib/api-utils'
 
-// ─── In-memory cache (5-minute TTL) ──────────────────────────────────────
+// ─── In-memory cache (30-minute TTL) ──────────────────────────────────────
 const cache = new Map<string, { data: { articles: any[] }; timestamp: number }>()
-const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+const CACHE_TTL = 30 * 60 * 1000 // 30 minutes
 
 function getCached(key: string) {
   const entry = cache.get(key)
