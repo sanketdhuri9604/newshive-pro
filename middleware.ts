@@ -28,11 +28,9 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // getUser() is more reliable than getSession() in middleware
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Protected routes
-  const protectedPaths = ['/profile', '/saved']
+  const protectedPaths = ['/profile', '/saved', '/history']
   const isProtected = protectedPaths.some((p) =>
     request.nextUrl.pathname.startsWith(p)
   )
@@ -43,7 +41,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // Auth pages — redirect to home if already logged in
   const authPaths = ['/login', '/register']
   const isAuthPage = authPaths.some((p) =>
     request.nextUrl.pathname.startsWith(p)
@@ -57,7 +54,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/profile/:path*', '/saved/:path*', '/login', '/register'],
-
+  matcher: [
+    '/profile/:path*',
+    '/saved/:path*',
+    '/history/:path*',
+    '/login',
+    '/register',
+  ],
 }
-const protectedPaths = ['/profile', '/saved', '/history']
