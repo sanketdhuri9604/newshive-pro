@@ -12,8 +12,6 @@
 
 *Real news. AI clarity. No noise.*
 
-[🌐 Live Demo](https://newshive-pro.vercel.app) · [📸 Screenshots](#screenshots) · [🚀 Features](#features) · [🛠️ Tech Stack](#tech-stack)
-
 </div>
 
 ---
@@ -205,7 +203,7 @@ NewsHive Pro uses **Groq's LLaMA 3.1** model for all AI features:
 
 ## 👨‍💻 Author
 
-**Sanket** — College Exhibition Project
+**Sanket**
 
 ---
 
@@ -217,5 +215,5 @@ This project is for educational purposes as part of a college exhibition.
 
 <div align="center">
   <p>Built with ❤️ using Next.js, Supabase & Groq AI</p>
-  <p>⚡ NewsHive Pro — Real news. AI clarity. No noise.</p>
+  <p>⚡ NewsHive Pro - Real news. AI clarity. No noise.</p>
 </div>
