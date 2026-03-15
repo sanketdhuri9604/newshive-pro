@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/shared/AuthProvider'
 import { supabase } from '@/lib/supabase'
-import { Mail, Edit3, Save, X, Bookmark, Clock, Flame, Check } from 'lucide-react'
+import { Mail, Edit3, Save, X, Bookmark, Clock, Flame, Check, Lock, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ReadingGoals from '@/components/ui/ReadingGoals'
 
@@ -66,6 +66,17 @@ export default function ProfilePage() {
   const [streak, setStreak] = useState({ current: 0, longest: 0, todayRead: false })
   const [followedTopics, setFollowedTopics] = useState<string[]>([])
   const [savingTopics, setSavingTopics] = useState(false)
+
+  // ── Change Password ──
+  const [showChangePassword, setShowChangePassword] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [changingPassword, setChangingPassword] = useState(false)
+
+  // ── Delete Account ──
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -166,6 +177,46 @@ export default function ProfilePage() {
     toast.success('Signed out!')
     router.push('/')
   }
+
+  // ── Change Password Handler ──
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) { toast.error('Password must be at least 6 characters'); return }
+    if (newPassword !== confirmPassword) { toast.error('Passwords do not match!'); return }
+    setChangingPassword(true)
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword })
+      if (error) throw error
+      toast.success('Password changed successfully! ✅')
+      setShowChangePassword(false)
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch (err: any) {
+      toast.error(err.message || 'Could not change password')
+    } finally {
+      setChangingPassword(false)
+    }
+  }
+
+  // ── Delete Account Handler ──
+  const handleDeleteAccount = async () => {
+  if (deleteConfirmText !== 'DELETE') { toast.error('Type DELETE to confirm'); return }
+  setDeleting(true)
+  try {
+    const res = await fetch('/api/delete-account', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user!.id })
+    })
+    if (!res.ok) throw new Error('Failed')
+    await signOut()
+    toast.success('Account deleted. Goodbye! 👋')
+    router.push('/')
+  } catch {
+    toast.error('Could not delete account. Try again.')
+  } finally {
+    setDeleting(false)
+  }
+}
 
   if (!user || !profile) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -283,6 +334,7 @@ export default function ProfilePage() {
           }
         </p>
       </div>
+
       <ReadingGoals />
 
       {/* Topics Follow */}
@@ -328,10 +380,98 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* ── Change Password ── */}
+      <div className="glass rounded-2xl border border-white/10 p-5 mb-4">
+        <button
+          onClick={() => setShowChangePassword(!showChangePassword)}
+          className="w-full flex items-center justify-between text-sm font-semibold text-text-primary">
+          <span className="flex items-center gap-2">
+            <Lock size={14} className="text-accent-cyan" /> Change Password
+          </span>
+          <span className="text-text-muted text-xs">{showChangePassword ? '▲' : '▼'}</span>
+        </button>
+
+        {showChangePassword && (
+          <div className="mt-4 space-y-3 border-t border-white/5 pt-4">
+            <div>
+              <label className="text-xs text-text-muted mb-1.5 block">New Password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                placeholder="Min 6 characters"
+                className="input-field"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-text-muted mb-1.5 block">Confirm Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter new password"
+                className="input-field"
+              />
+            </div>
+            <button
+              onClick={handleChangePassword}
+              disabled={changingPassword || !newPassword || !confirmPassword}
+              className="w-full py-2.5 bg-accent-cyan/10 hover:bg-accent-cyan/20 border border-accent-cyan/20 text-accent-cyan text-sm font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+              {changingPassword
+                ? <><span className="w-4 h-4 border-2 border-accent-cyan/30 border-t-accent-cyan rounded-full animate-spin" /> Changing...</>
+                : <><Lock size={13} /> Change Password</>
+              }
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ── Sign Out ── */}
       <button onClick={handleSignOut}
-        className="w-full py-3 border border-accent-red/20 text-accent-red hover:bg-accent-red/10 rounded-xl text-sm font-medium transition-all">
+        className="w-full py-3 border border-accent-red/20 text-accent-red hover:bg-accent-red/10 rounded-xl text-sm font-medium transition-all mb-4">
         Sign Out
       </button>
+
+      {/* ── Delete Account ── */}
+      <div className="glass rounded-2xl border border-accent-red/20 p-5">
+        <button
+          onClick={() => setShowDeleteAccount(!showDeleteAccount)}
+          className="w-full flex items-center justify-between text-sm font-semibold text-accent-red">
+          <span className="flex items-center gap-2">
+            <Trash2 size={14} /> Delete Account
+          </span>
+          <span className="text-xs opacity-60">{showDeleteAccount ? '▲' : '▼'}</span>
+        </button>
+
+        {showDeleteAccount && (
+          <div className="mt-4 space-y-3 border-t border-accent-red/10 pt-4">
+            <p className="text-xs text-text-muted leading-relaxed">
+              ⚠️ This will permanently delete your account and all data including saved articles, comments, notes, badges, and reading history. <strong className="text-accent-red">This cannot be undone!</strong>
+            </p>
+            <div>
+              <label className="text-xs text-text-muted mb-1.5 block">
+                Type <strong className="text-accent-red">DELETE</strong> to confirm
+              </label>
+              <input
+                value={deleteConfirmText}
+                onChange={e => setDeleteConfirmText(e.target.value)}
+                placeholder="Type DELETE"
+                className="input-field border-accent-red/20 focus:border-accent-red/40"
+              />
+            </div>
+            <button
+              onClick={handleDeleteAccount}
+              disabled={deleting || deleteConfirmText !== 'DELETE'}
+              className="w-full py-2.5 bg-accent-red/10 hover:bg-accent-red/20 border border-accent-red/30 text-accent-red text-sm font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+              {deleting
+                ? <><span className="w-4 h-4 border-2 border-accent-red/30 border-t-accent-red rounded-full animate-spin" /> Deleting...</>
+                : <><Trash2 size={13} /> Permanently Delete Account</>
+              }
+            </button>
+          </div>
+        )}
+      </div>
+
     </div>
   )
 }
