@@ -9,7 +9,7 @@ import toast from 'react-hot-toast'
 import type { Article } from '@/lib/types'
 
 const PAGE_SIZE = 12
-const CACHE_TTL = 30 * 60 * 1000 // 30 minutes
+const CACHE_TTL = 10 * 60 * 1000 // 10 minutes
 
 function getLocalCache(key: string): { articles: Article[]; timestamp: number } | null {
   try {
