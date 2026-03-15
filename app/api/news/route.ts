@@ -10,7 +10,7 @@ const supabase = createClient(
 )
 
 const CACHE_TTL = 10 * 60 * 1000 // 10 minutes
-const MIN_ARTICLES = 20 // agar kam ho toh english mix karo
+const MIN_ARTICLES = 5 // agar kam ho toh english mix karo
 
 // ─── RSS Parser with media tag support ───────────────────────────────────
 const parser = new Parser({
@@ -651,13 +651,13 @@ export async function GET(req: NextRequest) {
     const results = await Promise.all(categoryFeeds.map(fetchRSS))
     articles = dedupe(results.flat())
 
-    // ── Agar articles kam hain toh English mix karo ──
-    if (articles.length < MIN_ARTICLES && lang !== 'en') {
-      const enFeeds = RSS_FEEDS['en'][category] || RSS_FEEDS['en']['general'] || []
-      const enResults = await Promise.all(enFeeds.map(fetchRSS))
-      const enArticles = dedupe(enResults.flat())
-      articles = dedupe([...articles, ...enArticles])
-    }
+    // ── English articles hamesha mix karo extra ke liye ──
+if (lang !== 'en') {
+  const enFeeds = RSS_FEEDS['en'][category] || RSS_FEEDS['en']['general'] || []
+  const enResults = await Promise.all(enFeeds.map(fetchRSS))
+  const enArticles = dedupe(enResults.flat())
+  articles = dedupe([...articles, ...enArticles])
+}
   }
 
   // ── Images fill karo ──
