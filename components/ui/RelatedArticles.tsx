@@ -16,7 +16,7 @@ interface Article {
 }
 
 export default function RelatedArticles({ title, category }: { title: string; category?: string }) {
-  const { lang } = useLang()
+  const { lang, t } = useLang()
   const router = useRouter()
   const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(false)
@@ -29,7 +29,6 @@ export default function RelatedArticles({ title, category }: { title: string; ca
   const fetchRelated = async () => {
     setLoading(true)
     try {
-      // Extract 2-3 keywords from title
       const stopWords = new Set(['the', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'of', 'and', 'or', 'is', 'was', 'are', 'with', 'that', 'this', 'it', 'as', 'by', 'from'])
       const keywords = title
         .toLowerCase()
@@ -43,7 +42,6 @@ export default function RelatedArticles({ title, category }: { title: string; ca
       const res = await fetch(`/api/news?q=${encodeURIComponent(query)}&lang=${lang}`)
       const data = await res.json()
 
-      // Filter out current article
       const filtered = (data.articles || [])
         .filter((a: Article) => a.title !== title)
         .slice(0, 4)
@@ -73,7 +71,7 @@ export default function RelatedArticles({ title, category }: { title: string; ca
       <button onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
         <span className="flex items-center gap-2 text-sm font-semibold text-text-primary">
-          <span className="text-lg">🔗</span> Related Articles
+          <span className="text-lg">🔗</span> {t('detail.relatedArticles')}
         </span>
         {open ? <ChevronUp size={15} className="text-accent-cyan" /> : <ChevronDown size={15} className="text-text-muted" />}
       </button>
@@ -85,7 +83,7 @@ export default function RelatedArticles({ title, category }: { title: string; ca
               {[...Array(3)].map((_, i) => <div key={i} className="skeleton h-16 rounded-xl" />)}
             </div>
           ) : articles.length === 0 ? (
-            <p className="text-text-muted text-sm text-center py-4">No related articles found</p>
+            <p className="text-text-muted text-sm text-center py-4">{t('detail.noRelated')}</p>
           ) : (
             <div className="space-y-2">
               {articles.map((article, i) => (

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { getSupabase } from '@/lib/supabase'
 import { useAuth } from '../shared/AuthProvider'
+import { useLang } from '../shared/LangProvider'
 import { Send, Loader2, ShieldAlert, ChevronUp, ChevronDown, Trash2 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
@@ -10,6 +11,7 @@ import type { Comment } from '@/lib/types'
 
 export default function CommentSection({ newsUrl }: { newsUrl: string }) {
   const { user, profile } = useAuth()
+  const { t } = useLang()
   const [comments, setComments] = useState<Comment[]>([])
   const [input, setInput] = useState('')
   const [posting, setPosting] = useState(false)
@@ -25,12 +27,12 @@ export default function CommentSection({ newsUrl }: { newsUrl: string }) {
       .eq('is_toxic', false)
       .order('created_at', { ascending: false })
       .limit(20)
-    if (error) { toast.error('Could not load comments'); return }
+    if (error) { toast.error(t('comments.loadFailed')); return }
     setComments((data as Comment[]) || [])
   }
 
   const postComment = async () => {
-    if (!user) { toast.error('Login to comment'); return }
+    if (!user) { toast.error(t('comments.loginToComment')); return }
     if (!input.trim()) return
     setPosting(true)
     try {
@@ -40,7 +42,7 @@ export default function CommentSection({ newsUrl }: { newsUrl: string }) {
       }).then(r => r.json())
 
       if (toxRes.toxic) {
-        toast.error('Comment flagged as toxic and not posted.')
+        toast.error(t('comments.toxic'))
         setPosting(false)
         return
       }
@@ -52,9 +54,9 @@ export default function CommentSection({ newsUrl }: { newsUrl: string }) {
 
       setInput('')
       await loadComments()
-      toast.success('Comment posted!')
+      toast.success(t('comments.posted'))
     } catch {
-      toast.error('Could not post comment. Try again.')
+      toast.error(t('comments.postFailed'))
     }
     setPosting(false)
   }
@@ -63,9 +65,9 @@ export default function CommentSection({ newsUrl }: { newsUrl: string }) {
     try {
       await supabase.from('comments').delete().eq('id', commentId).eq('user_id', user!.id)
       setComments(prev => prev.filter(c => c.id !== commentId))
-      toast.success('Comment deleted!')
+      toast.success(t('comments.deleted'))
     } catch {
-      toast.error('Could not delete comment')
+      toast.error(t('comments.deleteFailed'))
     }
   }
 
@@ -73,17 +75,16 @@ export default function CommentSection({ newsUrl }: { newsUrl: string }) {
     <div className="rounded-2xl border overflow-hidden transition-all"
       style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(12px)', borderColor: open ? 'rgba(139,92,246,0.4)' : 'rgba(255,255,255,0.08)' }}>
 
-      {/* Header */}
       <button onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
         <span className="flex items-center gap-2 text-sm font-semibold text-text-primary">
           <span className="text-lg">💬</span>
-          Discussion ({comments.length})
+          {t('comments.discussion')} ({comments.length})
         </span>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 text-xs text-text-muted">
             <ShieldAlert size={11} className="text-accent-green" />
-            <span>AI moderated</span>
+            <span>{t('comments.aiModerated')}</span>
           </div>
           {open ? <ChevronUp size={15} className="text-accent-purple" /> : <ChevronDown size={15} className="text-text-muted" />}
         </div>
@@ -91,11 +92,10 @@ export default function CommentSection({ newsUrl }: { newsUrl: string }) {
 
       {open && (
         <div className="px-4 pb-4 border-t border-white/5 pt-4 space-y-4">
-          {/* Input */}
           <div className="flex gap-2">
             <input
               className="input-field text-sm flex-1"
-              placeholder={user ? "Share your thoughts..." : "Login to comment"}
+              placeholder={user ? t('comments.placeholder') : t('comments.loginToComment')}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && postComment()}
@@ -107,7 +107,6 @@ export default function CommentSection({ newsUrl }: { newsUrl: string }) {
             </button>
           </div>
 
-          {/* Comments */}
           <div className="space-y-3">
             {comments.map((c) => (
               <div key={c.id} className="flex gap-3 rounded-xl p-3 border border-white/5"
@@ -135,7 +134,7 @@ export default function CommentSection({ newsUrl }: { newsUrl: string }) {
               </div>
             ))}
             {comments.length === 0 && (
-              <p className="text-center text-text-muted text-sm py-4">No comments yet. Be the first!</p>
+              <p className="text-center text-text-muted text-sm py-4">{t('comments.noComments')}</p>
             )}
           </div>
         </div>

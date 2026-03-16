@@ -57,11 +57,8 @@ function NewsDetailContent() {
   const [communityComment, setCommunityComment] = useState('')
   const [showCommunityShare, setShowCommunityShare] = useState(false)
 
-  // ── Reading Progress Bar ──
   const [readProgress, setReadProgress] = useState(0)
-
-  // ── Font Size ──
-  const [fontSize, setFontSize] = useState(14) // default 14px
+  const [fontSize, setFontSize] = useState(14)
   const FONT_MIN = 12
   const FONT_MAX = 20
 
@@ -76,7 +73,6 @@ function NewsDetailContent() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // ── Swipe to go back ──
   const touchStartX = useRef<number | null>(null)
   const touchStartY = useRef<number | null>(null)
 
@@ -130,7 +126,7 @@ function NewsDetailContent() {
         const { error } = await supabase.from('saved_news').delete().eq('user_id', user.id).eq('url', article.url)
         if (error) throw error
         setSaved(false)
-        toast.success('Removed from saved')
+        toast.success(t('detail.removedFromSaved'))
       } else {
         const { error } = await supabase.from('saved_news').insert({ user_id: user.id, title: article.title, url: article.url, image_url: article.image, description: article.description, source: article.source })
         if (error) throw error
@@ -138,7 +134,7 @@ function NewsDetailContent() {
         toast.success(t('card.saved'))
       }
     } catch {
-      toast.error('Failed to update saved status')
+      toast.error(t('detail.saveFailed'))
     } finally {
       setSavingLoading(false)
     }
@@ -152,12 +148,12 @@ function NewsDetailContent() {
       window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(article.url)}`, '_blank')
     } else {
       navigator.clipboard.writeText(article.url)
-      toast.success('Link copied!')
+      toast.success(t('detail.linkCopied'))
     }
   }
 
   const shareToCommunity = async () => {
-    if (!user) { toast.error('Login to share!'); return }
+    if (!user) { toast.error(t('detail.loginToShare')); return }
     setSharingCommunity(true)
     try {
       const { error } = await supabase.from('community_shares').insert({
@@ -172,11 +168,11 @@ function NewsDetailContent() {
         likes: 0,
       })
       if (error) throw error
-      toast.success('Shared to community! 🎉')
+      toast.success(t('detail.sharedToCommunity'))
       setShowCommunityShare(false)
       setCommunityComment('')
     } catch {
-      toast.error('Could not share. Try again.')
+      toast.error(t('detail.shareFailed'))
     } finally { setSharingCommunity(false) }
   }
 
@@ -200,7 +196,7 @@ function NewsDetailContent() {
       })
       const data = await res.json()
       setTranslated(data.translated || '')
-    } catch { toast.error('Translation failed') }
+    } catch { toast.error(t('detail.translationFailed')) }
     finally { setTranslating(false) }
   }
 
@@ -238,7 +234,7 @@ function NewsDetailContent() {
           }
         }
       }
-    } catch { toast.error('Failed to get answer') }
+    } catch { toast.error(t('detail.askFailed')) }
     finally { setAskLoading(false) }
   }
 
@@ -282,17 +278,11 @@ function NewsDetailContent() {
       const res = await fetch('/api/ai/credibility-explain', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: article.title,
-          description: article.description,
-          source: article.source,
-          score: fakeScore.credibilityScore,
-          verdict: fakeScore.verdict,
-        })
+        body: JSON.stringify({ title: article.title, description: article.description, source: article.source, score: fakeScore.credibilityScore, verdict: fakeScore.verdict })
       })
       const data = await res.json()
       setExplainer(data.explanation || '')
-    } catch { toast.error('Could not explain score') }
+    } catch { toast.error(t('detail.explainFailed')) }
     finally { setExplainerLoading(false) }
   }
 
@@ -315,13 +305,13 @@ function NewsDetailContent() {
 
   if (!article.title) return (
     <div className="min-h-screen flex items-center justify-center">
-      <p className="text-text-muted">No article selected.</p>
+      <p className="text-text-muted">{t('detail.noArticle')}</p>
     </div>
   )
 
   return (
     <>
-      {/* ── Reading Progress Bar ── */}
+      {/* Reading Progress Bar */}
       <div
         className="fixed top-0 left-0 z-[9999] h-0.5 transition-all duration-100"
         style={{
@@ -331,7 +321,6 @@ function NewsDetailContent() {
         }}
       />
 
-      {/* ── Main Content with swipe handler ── */}
       <div
         className="max-w-3xl mx-auto px-4 py-8"
         style={{ position: 'relative', zIndex: 1 }}
@@ -375,11 +364,12 @@ function NewsDetailContent() {
             )}
             {article.publishedAt && (
               <span className="text-xs text-text-muted">
-                {new Date(article.publishedAt).toLocaleDateString()}
+                // ✅ Yeh karo — hamesha same format
+{new Date(article.publishedAt).toLocaleDateString('en-GB')}
               </span>
             )}
 
-            {/* ── Font Size Controls ── */}
+            {/* Font Size Controls */}
             <div className="flex items-center gap-1 ml-auto px-2 py-1 rounded-lg border border-white/8"
               style={{ background: 'rgba(255,255,255,0.03)' }}>
               <button
@@ -394,8 +384,8 @@ function NewsDetailContent() {
                 className="w-6 h-6 rounded-md text-sm font-bold text-text-muted hover:text-text-primary hover:bg-white/10 transition-all disabled:opacity-30 flex items-center justify-center"
               >A+</button>
             </div>
-
           </div>
+
           <h1 className="font-serif text-2xl md:text-3xl font-bold text-text-primary leading-tight mb-4">
             {article.title}
           </h1>
@@ -423,14 +413,14 @@ function NewsDetailContent() {
               color: saved ? '#8B5CF6' : '#A0A0C0'
             }}>
             {saved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
-            {saved ? t('card.saved') : 'Save'}
+            {saved ? t('card.saved') : t('detail.save')}
           </button>
         </div>
 
         {/* Share */}
         <div className="flex items-center gap-2 mb-8 flex-wrap">
           <span className="text-xs text-text-muted flex items-center gap-1.5">
-            <Share2 size={11} /> Share:
+            <Share2 size={11} /> {t('detail.share')}:
           </span>
           <button onClick={() => handleShare('whatsapp')}
             className="px-3 py-1.5 rounded-xl text-xs font-medium border border-green-400/20 text-green-400 hover:bg-green-400/10 transition-all">
@@ -442,7 +432,7 @@ function NewsDetailContent() {
           </button>
           <button onClick={() => handleShare('copy')}
             className="px-3 py-1.5 rounded-xl text-xs font-medium border border-white/10 text-text-muted hover:bg-white/5 transition-all">
-            Copy Link
+            {t('detail.copyLink')}
           </button>
         </div>
 
@@ -537,7 +527,7 @@ function NewsDetailContent() {
                       {!explainer && !explainerLoading && (
                         <button onClick={fetchExplainer}
                           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border border-accent-orange/20 text-accent-orange hover:bg-accent-orange/10 transition-all">
-                          <Zap size={11} /> Why this score?
+                          <Zap size={11} /> {t('detail.whyThisScore')}
                         </button>
                       )}
                       {explainerLoading && (
@@ -550,7 +540,7 @@ function NewsDetailContent() {
                       {explainer && (
                         <div className="rounded-xl border border-accent-orange/15 p-3 space-y-2"
                           style={{ background: 'rgba(249,115,22,0.05)' }}>
-                          <p className="text-xs font-semibold text-accent-orange">Score Explanation</p>
+                          <p className="text-xs font-semibold text-accent-orange">{t('detail.scoreExplanation')}</p>
                           <p className="text-text-secondary text-xs leading-relaxed whitespace-pre-line">{explainer}</p>
                         </div>
                       )}
@@ -616,7 +606,7 @@ function NewsDetailContent() {
               style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(12px)', borderColor: showTranslate ? 'rgba(139,92,246,0.4)' : 'rgba(255,255,255,0.08)' }}>
               <button onClick={() => showTranslate ? setShowTranslate(false) : fetchTranslate()}
                 className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
-                <span className="flex items-center gap-2 text-sm font-semibold text-text-primary"><span className="text-lg">🌐</span> Translate Article</span>
+                <span className="flex items-center gap-2 text-sm font-semibold text-text-primary"><span className="text-lg">🌐</span> {t('detail.translateArticle')}</span>
                 {showTranslate ? <ChevronUp size={15} className="text-accent-purple" /> : <ChevronDown size={15} className="text-text-muted" />}
               </button>
               {showTranslate && (
@@ -635,7 +625,7 @@ function NewsDetailContent() {
               style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(12px)', borderColor: showAsk ? 'rgba(6,182,212,0.4)' : 'rgba(255,255,255,0.08)' }}>
               <button onClick={() => setShowAsk(!showAsk)}
                 className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
-                <span className="flex items-center gap-2 text-sm font-semibold text-text-primary"><span className="text-lg">💬</span> Ask AI about this article</span>
+                <span className="flex items-center gap-2 text-sm font-semibold text-text-primary"><span className="text-lg">💬</span> {t('detail.askAI')}</span>
                 {showAsk ? <ChevronUp size={15} className="text-accent-cyan" /> : <ChevronDown size={15} className="text-text-muted" />}
               </button>
               {showAsk && (
@@ -645,7 +635,7 @@ function NewsDetailContent() {
                       value={askQuestion}
                       onChange={e => setAskQuestion(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && fetchAskAI()}
-                      placeholder="Ask anything about this article..."
+                      placeholder={t('detail.askPlaceholder')}
                       className="input-field flex-1 text-sm"
                     />
                     <button onClick={fetchAskAI} disabled={askLoading || !askQuestion.trim()}
@@ -677,7 +667,7 @@ function NewsDetailContent() {
               <button onClick={() => setShowCommunityShare(!showCommunityShare)}
                 className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
                 <span className="flex items-center gap-2 text-sm font-semibold text-text-primary">
-                  <span className="text-lg">👥</span> Share to Community
+                  <span className="text-lg">👥</span> {t('detail.shareToCommunity')}
                 </span>
                 {showCommunityShare ? <ChevronUp size={15} className="text-accent-pink" /> : <ChevronDown size={15} className="text-text-muted" />}
               </button>
@@ -688,12 +678,12 @@ function NewsDetailContent() {
                     onChange={e => setCommunityComment(e.target.value)}
                     rows={2}
                     maxLength={200}
-                    placeholder="Add a comment (optional)..."
+                    placeholder={t('detail.communityCommentPlaceholder')}
                     className="input-field resize-none text-sm"
                   />
                   <button onClick={shareToCommunity} disabled={sharingCommunity}
                     className="w-full py-2.5 bg-accent-pink/10 hover:bg-accent-pink/20 border border-accent-pink/20 text-accent-pink text-sm font-medium rounded-xl transition-all disabled:opacity-50">
-                    {sharingCommunity ? 'Sharing...' : '🎉 Share to Community Feed'}
+                    {sharingCommunity ? t('detail.sharing') : t('detail.shareToCommunityBtn')}
                   </button>
                 </div>
               )}

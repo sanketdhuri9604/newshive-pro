@@ -44,8 +44,10 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('newshive-lang', newLang)
   }, [])
 
-  const t = useCallback((key: string) => translate(key, lang), [lang])
-
+ const t = useCallback((key: string) => {
+  if (!mounted) return translate(key, 'en')
+  return translate(key, lang)
+}, [lang, mounted])
   return (
     <LangContext.Provider value={{
       lang,
