@@ -10,7 +10,7 @@ import {
   Zap, Home, Flame, GitCompare, Bot, Bookmark,
   User, LogOut, Menu, X, ChevronDown, Search, Sparkles, Clock,
   Trophy, Users, BarChart2, StickyNote, Swords, Calendar, Target, Medal, MessageSquare,
-  Download
+  Download, MapPin
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
@@ -71,6 +71,7 @@ export default function Navbar() {
     { href: '/challenge', label: 'Daily Challenge', icon: Target },
     { href: '/debate', label: 'Debate Mode', icon: Swords },
     { href: '/timeline', label: 'News Timeline', icon: Calendar },
+    { href: '/map', label: 'News Map', icon: MapPin },
     { href: '/saved', label: t('nav.saved'), icon: Bookmark },
   ]
 
