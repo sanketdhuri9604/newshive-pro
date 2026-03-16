@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from './AuthProvider'
@@ -9,7 +9,8 @@ import LanguageSelector from './LanguageSelector'
 import {
   Zap, Home, Flame, GitCompare, Bot, Bookmark,
   User, LogOut, Menu, X, ChevronDown, Search, Sparkles, Clock,
-  Trophy, Users, BarChart2, StickyNote, Swords, Calendar, Target, Medal, MessageSquare
+  Trophy, Users, BarChart2, StickyNote, Swords, Calendar, Target, Medal, MessageSquare,
+  Download
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
@@ -22,6 +23,43 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
+
+  // ── PWA Install ──
+  const [installPrompt, setInstallPrompt] = useState<any>(null)
+  const [isInstalled, setIsInstalled] = useState(false)
+
+  useEffect(() => {
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstalled(true)
+      return
+    }
+
+    // Listen for install prompt
+    const handler = (e: Event) => {
+      e.preventDefault()
+      setInstallPrompt(e)
+    }
+    window.addEventListener('beforeinstallprompt', handler)
+
+    // Listen for successful install
+    window.addEventListener('appinstalled', () => {
+      setIsInstalled(true)
+      setInstallPrompt(null)
+      toast.success('NewsHive installed! 🎉')
+    })
+
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  const handleInstall = async () => {
+    if (!installPrompt) return
+    installPrompt.prompt()
+    const { outcome } = await installPrompt.userChoice
+    if (outcome === 'accepted') {
+      setInstallPrompt(null)
+    }
+  }
 
   const NAV_LINKS = [
     { href: '/', label: t('nav.feed'), icon: Home },
@@ -151,6 +189,19 @@ export default function Navbar() {
               )}>
               <Search size={15} />
             </Link>
+
+            {/* ── PWA Install Button ── */}
+            {installPrompt && !isInstalled && (
+              <button
+                onClick={handleInstall}
+                title="Install App"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-accent-purple/30 text-accent-purple hover:bg-accent-purple/10 transition-all text-xs font-medium"
+              >
+                <Download size={14} />
+                <span className="hidden sm:block">Install</span>
+              </button>
+            )}
+
             <LanguageSelector />
             {renderAuthSection()}
 
@@ -178,6 +229,16 @@ export default function Navbar() {
                   {label}
                 </Link>
               ))}
+
+              {/* Mobile Install Button */}
+              {installPrompt && !isInstalled && (
+                <button
+                  onClick={() => { handleInstall(); setMobileOpen(false) }}
+                  className="flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium text-accent-purple hover:bg-accent-purple/10 transition-all w-full">
+                  <Download size={16} />
+                  Install App
+                </button>
+              )}
             </div>
           </div>
         )}
