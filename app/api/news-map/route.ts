@@ -39,7 +39,7 @@ ${numbered}`
     console.log('🤖 Groq full response:', JSON.stringify(data)) // full response
 
     const text = data.choices?.[0]?.message?.content?.trim() || '[]'
-    const match = text.match(/\[.*\]/s)
+    const match = text.match(/\[[\s\S]*\]/)
     if (!match) {
       console.log('❌ No JSON array found in Groq response')
       return articles.map(() => null)
