@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import Navbar from '@/components/shared/Navbar'
+import BottomNav from '@//components/shared/BottomNav'
 import AuthProvider from '@/components/shared/AuthProvider'
 import { LangProvider } from '@/components/shared/LangProvider'
 
@@ -40,17 +41,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LangProvider>
           <AuthProvider>
             <Navbar />
-            <main className="md:pl-14">
+            <main className="md:pl-14 pb-20 md:pb-0">
               {children}
             </main>
+            <BottomNav />
             <Toaster
               position="bottom-right"
               toastOptions={{
+                className: 'toast-custom',
                 style: {
-                  background: '#111124',
-                  color: '#F0F0FF',
-                  border: '1px solid #1e1e3a',
+                  background: 'rgba(13,13,32,0.95)',
+                  color: '#F8F8FF',
+                  border: '1px solid rgba(255,255,255,0.1)',
                   fontFamily: 'DM Sans, sans-serif',
+                  borderRadius: '14px',
+                  backdropFilter: 'blur(20px)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(139,92,246,0.1)',
                 },
               }}
             />

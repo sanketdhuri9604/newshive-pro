@@ -85,7 +85,7 @@ export default function NewsCard({ article, index, onCompareSelect, isSelectedFo
   return (
     <div
       onClick={handleClick}
-      className="group relative rounded-2xl overflow-hidden border cursor-pointer transition-all duration-300 hover:-translate-y-2"
+      className="group relative rounded-2xl overflow-hidden border cursor-pointer transition-all duration-300 hover:-translate-y-2 animate-fade-in"
       style={{
         background: 'rgba(255,255,255,0.03)',
         backdropFilter: 'blur(12px)',
@@ -94,6 +94,7 @@ export default function NewsCard({ article, index, onCompareSelect, isSelectedFo
           ? '0 0 30px rgba(6,182,212,0.2), 0 8px 32px rgba(0,0,0,0.3)'
           : '0 8px 32px rgba(0,0,0,0.2)',
         animationDelay: `${index * 60}ms`,
+        animationFillMode: 'both',
       }}
       onMouseEnter={e => {
         if (!isSelectedForCompare) {
@@ -143,7 +144,7 @@ export default function NewsCard({ article, index, onCompareSelect, isSelectedFo
           </span>
         </div>
 
-        {/* Action buttons — always visible on mobile, hover on desktop */}
+        {/* Action buttons */}
         <div className="absolute top-3 right-3 flex gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           {onCompareSelect && (
             <button

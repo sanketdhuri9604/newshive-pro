@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { Mail, Edit3, Save, X, Bookmark, Clock, Flame, Check, Lock, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ReadingGoals from '@/components/ui/ReadingGoals'
+import ReadingStreakCalendar from '@/components/ui/ReadingStreakCalendar'
 
 const ALL_TOPICS = [
   { id: 'technology', label: 'Technology', emoji: '💻' },
@@ -333,6 +334,11 @@ export default function ProfilePage() {
             : <span className="text-text-muted">Start reading to build your streak! 📖</span>
           }
         </p>
+        {/* Calendar */}
+<div className="mt-4 pt-4 border-t border-white/5">
+  <p className="text-xs text-text-muted mb-3">Last 70 days</p>
+  <ReadingStreakCalendar />
+</div>
       </div>
 
       <ReadingGoals />

@@ -128,8 +128,8 @@ export default function HomePage() {
 
   const hero = articles[0]
   const sideArticles = articles.slice(1, 4)
-  const gridArticles = articles.slice(4, visibleCount)
-  const hasMore = articles.length > visibleCount
+  const gridArticles = articles.slice(4,4 + visibleCount)
+  const hasMore = articles.length > 4 + visibleCount
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8" style={{ position: 'relative', zIndex: 1 }}>
