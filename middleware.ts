@@ -11,20 +11,24 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
-        },
-        set(name: string, value: string, options: Record<string, unknown>) {
-          request.cookies.set({ name, value, ...options } as never)
-          response = NextResponse.next({ request: { headers: request.headers } })
-          response.cookies.set({ name, value, ...options } as never)
-        },
-        remove(name: string, options: Record<string, unknown>) {
-          request.cookies.set({ name, value: '', ...options } as never)
-          response = NextResponse.next({ request: { headers: request.headers } })
-          response.cookies.set({ name, value: '', ...options } as never)
-        },
-      },
+  get(name: string) {
+    return request.cookies.get(name)?.value
+  },
+  set(name: string, value: string, options: Record<string, unknown>) {
+    request.cookies.set({ name, value, ...options } as never)
+    response = NextResponse.next({ 
+      request: { headers: request.headers } 
+    })
+    response.cookies.set({ name, value, ...options } as never)
+  },
+  remove(name: string, options: Record<string, unknown>) {
+    request.cookies.set({ name, value: '', ...options } as never)
+    response = NextResponse.next({ 
+      request: { headers: request.headers } 
+    })
+    response.cookies.set({ name, value: '', ...options } as never)
+  },
+},
     }
   )
 
@@ -46,9 +50,9 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith(p)
   )
 
-  if (isAuthPage && user) {
-    return NextResponse.redirect(new URL('/', request.url))
-  }
+ if (isAuthPage && user) {
+  return response  // redirect mat karo, bas jaane do
+}
 
   return response
 }
