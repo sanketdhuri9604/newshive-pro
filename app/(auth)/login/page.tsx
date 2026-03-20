@@ -43,8 +43,9 @@ export default function LoginPage() {
       }
       toast.success('Welcome back! 👋')
       router.push('/')
-    } catch {
-      toast.error('Something went wrong. Please try again.')
+   } catch (err) {
+      console.error('CATCH ERROR:', err)
+      toast.error(String(err))   // exact error dikhega toast mein
     } finally {
       setLoading(false)
     }
