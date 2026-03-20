@@ -38,10 +38,10 @@ export default function RegisterPage() {
     try {
       // Check username taken
       const { data: existing } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', username.toLowerCase())
-        .single()
+  .from('profiles')
+  .select('username')
+  .eq('username', username.toLowerCase())
+  .maybeSingle()
 
       if (existing) {
         setErrors(p => ({ ...p, username: 'Username already taken' }))
