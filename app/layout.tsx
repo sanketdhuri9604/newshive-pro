@@ -2,9 +2,10 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import Navbar from '@/components/shared/Navbar'
-import BottomNav from '@//components/shared/BottomNav'
+import BottomNav from '@/components/shared/BottomNav'
 import AuthProvider from '@/components/shared/AuthProvider'
 import { LangProvider } from '@/components/shared/LangProvider'
+import AuthGuard from '@/components/shared/AuthGuard'
 
 export const metadata: Metadata = {
   title: 'NewsHive Pro',
@@ -40,11 +41,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-mesh min-h-screen">
         <LangProvider>
           <AuthProvider>
-            <Navbar />
-            <main className="md:pl-14 pb-20 md:pb-0">
-              {children}
-            </main>
-            <BottomNav />
+            <AuthGuard>
+              <Navbar />
+              <main className="md:pl-14 pb-20 md:pb-0">
+                {children}
+              </main>
+              <BottomNav />
+            </AuthGuard>
             <Toaster
               position="bottom-right"
               toastOptions={{

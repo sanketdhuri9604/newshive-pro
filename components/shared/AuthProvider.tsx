@@ -22,7 +22,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
-  loading: false,
+  loading: true,
   signOut: async () => {},
 })
 
@@ -31,7 +31,7 @@ export function useAuth() { return useContext(AuthContext) }
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false) // ← true rakho — check hone tak
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -44,20 +44,31 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     } catch {}
   }
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      if (session?.user) fetchProfile(session.user.id)
-    })
+  // ── YAHAN SE ──
+useEffect(() => {
+  // ── Timeout safety — 3 seconds max ──
+  const timeout = setTimeout(() => setLoading(false), 3000)
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-      if (session?.user) fetchProfile(session.user.id)
-      else setProfile(null)
-    })
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    clearTimeout(timeout)
+    setUser(session?.user ?? null)
+    if (session?.user) fetchProfile(session.user.id)
+    setLoading(false)
+  })
 
-    return () => subscription.unsubscribe()
-  }, [])
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    setUser(session?.user ?? null)
+    if (session?.user) fetchProfile(session.user.id)
+    else setProfile(null)
+    setLoading(false)
+  })
+
+  return () => {
+    clearTimeout(timeout)
+    subscription.unsubscribe()
+  }
+}, [])
+// ── YAHAN TAK ──
 
   const signOut = async () => {
     await supabase.auth.signOut()
