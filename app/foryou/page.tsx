@@ -177,7 +177,7 @@ function ForYouContent() {
           user_id: user.id,
           news_url: article.url,
           title: article.title,
-          category: article.category || 'general',
+          description: article.description,
           read_at: new Date().toISOString(),
         }, { onConflict: 'user_id,news_url' })
       } catch {}
@@ -360,15 +360,7 @@ function ForYouContent() {
                       </div>
                     )}
 
-                    {/* Category badge */}
-                    {article.category && (
-                      <div className="absolute bottom-3 left-3">
-                        <span className="text-[10px] font-mono text-accent-purple bg-bg-primary/80 backdrop-blur-sm border border-accent-purple/20 px-2 py-1 rounded-md capitalize">
-                          #{article.category}
-                        </span>
-                      </div>
-                    )}
-
+                    
                     {/* Compare button — hidden in compare mode, shown normally otherwise */}
                     {!isCompareMode && (
                       <button
