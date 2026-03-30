@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import NewsCard from '@/components/news/NewsCard'
 import { Search, TrendingUp, GitCompare, X, Zap, Flame, ArrowUp } from 'lucide-react'
 import { useLang } from '@/components/shared/LangProvider'
@@ -98,6 +98,8 @@ function HeroSkeleton() {
 export default function HomePage() {
   const { t, lang } = useLang()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isCompareMode = searchParams.get('compareMode') === 'true'
   const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -105,6 +107,7 @@ export default function HomePage() {
   const [query, setQuery] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [compareList, setCompareList] = useState<Article[]>([])
+  const [comparePrefilled, setComparePrefilled] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
   // ── Scroll to top ──
@@ -193,6 +196,40 @@ export default function HomePage() {
     setLoading(true)
     fetchNews(category, query)
   }, [category, lang]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!isCompareMode || comparePrefilled || typeof window === 'undefined') return
+
+    try {
+      const raw = sessionStorage.getItem('compare_article1')
+      if (!raw) {
+        setComparePrefilled(true)
+        return
+      }
+
+      const firstArticle = JSON.parse(raw)
+      if (!firstArticle?.url) {
+        sessionStorage.removeItem('compare_article1')
+        setComparePrefilled(true)
+        return
+      }
+
+      setCompareList([{
+        title: firstArticle.title || '',
+        description: firstArticle.desc || '',
+        url: firstArticle.url || '',
+        urlToImage: firstArticle.image || '',
+        source: { name: firstArticle.source || '' },
+      } as Article])
+
+      sessionStorage.removeItem('compare_article1')
+      setComparePrefilled(true)
+      toast.success('First article selected. Pick one more from this feed.', { duration: 2500 })
+    } catch {
+      sessionStorage.removeItem('compare_article1')
+      setComparePrefilled(true)
+    }
+  }, [isCompareMode, comparePrefilled])
 
   const handleSearch = () => { setQuery(searchInput); fetchNews(category, searchInput) }
 

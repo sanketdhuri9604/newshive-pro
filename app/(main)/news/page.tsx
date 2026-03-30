@@ -421,7 +421,7 @@ function NewsDetailContent() {
       image: article.image || '',
       url: article.url,
     }))
-    router.push('/foryou?compareMode=true')
+    router.push('/?compareMode=true')
     toast.success('Now select a second article from the feed!')
   }}
   className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all border border-accent-cyan/30 text-accent-cyan hover:bg-accent-cyan/10"

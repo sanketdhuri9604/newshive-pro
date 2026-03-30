@@ -156,7 +156,7 @@ export default function SavedPage() {
             <div className="mb-4 flex items-center gap-2 text-xs text-text-muted px-3 py-2 rounded-xl border border-white/5 w-fit"
               style={{ background: 'rgba(139,92,246,0.05)' }}>
               <GitCompare size={12} className="text-accent-purple" />
-              Kisi bhi 2 articles pe Compare button dabao to compare karo!
+              Click on compare button on articles to cmpare them (max2)
             </div>
           )}
 
