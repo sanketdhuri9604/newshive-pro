@@ -76,7 +76,6 @@ export default function NewsCard({ article, index, onCompareSelect, isSelectedFo
     setSaving(true)
     try {
       if (saved) {
-        // ── Unsave ──
         const { error } = await supabase
           .from('saved_news').delete()
           .eq('user_id', user.id).eq('url', article.url)
@@ -84,7 +83,6 @@ export default function NewsCard({ article, index, onCompareSelect, isSelectedFo
         setSaved(false)
         toast('Removed from saved', { icon: '🗑️' })
       } else {
-        // ── Save with Undo toast ──
         const { error } = await supabase.from('saved_news').insert({
           user_id: user.id,
           title: article.title,
@@ -95,8 +93,6 @@ export default function NewsCard({ article, index, onCompareSelect, isSelectedFo
         })
         if (error) throw error
         setSaved(true)
-
-        // ── Undo toast ──
         toast(
           (t) => (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -151,7 +147,7 @@ export default function NewsCard({ article, index, onCompareSelect, isSelectedFo
       )}
       style={{ animationDelay: `${index * 60}ms`, animationFillMode: 'both' }}
     >
-      {/* ── Image / Placeholder ── */}
+      {/* Image / Placeholder */}
       <div className="relative h-48 overflow-hidden">
         {!showPlaceholder ? (
           <Image
@@ -190,8 +186,8 @@ export default function NewsCard({ article, index, onCompareSelect, isSelectedFo
           </span>
         </div>
 
-        {/* Action buttons */}
-        <div className="absolute top-3 right-3 flex gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
+        {/* ✅ Action buttons — always visible (removed md:opacity-0) */}
+        <div className="absolute top-3 right-3 flex gap-1.5">
           {onCompareSelect && (
             <button
               onClick={handleCompare}
@@ -230,7 +226,7 @@ export default function NewsCard({ article, index, onCompareSelect, isSelectedFo
         )}
       </div>
 
-      {/* ── Content ── */}
+      {/* Content */}
       <div className="p-4">
         <h3 className="font-serif text-sm font-bold leading-snug mb-2 line-clamp-2
           text-text-primary group-hover:text-accent-purple transition-colors duration-200">
@@ -240,7 +236,7 @@ export default function NewsCard({ article, index, onCompareSelect, isSelectedFo
           {article.description}
         </p>
 
-        {/* ── Footer: read time + published date + read more ── */}
+        {/* Footer */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 text-text-muted text-xs">
             <div className="flex items-center gap-1">

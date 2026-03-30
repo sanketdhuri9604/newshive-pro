@@ -7,7 +7,7 @@ import { useAuth } from '@/components/shared/AuthProvider'
 import { supabase } from '@/lib/supabase'
 import {
   ArrowLeft, ExternalLink, Bookmark, BookmarkCheck,
-  Clock, Zap, ChevronDown, ChevronUp, Share2, Users
+  Clock, Zap, ChevronDown, ChevronUp, Share2, Users, GitCompare
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ReactionBar from '@/components/ui/ReactionBar'
@@ -364,7 +364,7 @@ function NewsDetailContent() {
             )}
             {article.publishedAt && (
               <span className="text-xs text-text-muted">
-                // ✅ Yeh karo — hamesha same format
+                
 {new Date(article.publishedAt).toLocaleDateString('en-GB')}
               </span>
             )}
@@ -412,6 +412,23 @@ function NewsDetailContent() {
               borderColor: saved ? 'rgba(139,92,246,0.4)' : 'rgba(255,255,255,0.1)',
               color: saved ? '#8B5CF6' : '#A0A0C0'
             }}>
+             <button
+  onClick={() => {
+    sessionStorage.setItem('compare_article1', JSON.stringify({
+      title: article.title,
+      desc: (article.description || '').slice(0, 300),
+      source: article.source || '',
+      image: article.image || '',
+      url: article.url,
+    }))
+    router.push('/foryou?compareMode=true')
+    toast.success('Now select a second article from the feed!')
+  }}
+  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all border border-accent-cyan/30 text-accent-cyan hover:bg-accent-cyan/10"
+>
+  <GitCompare size={14} />
+  Compare
+</button>
             {saved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
             {saved ? t('card.saved') : t('detail.save')}
           </button>

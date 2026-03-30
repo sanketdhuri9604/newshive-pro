@@ -10,10 +10,11 @@ import {
   Zap, Home, Flame, GitCompare, Bot, Bookmark,
   User, LogOut, Menu, X, ChevronDown, Search, Sparkles, Clock,
   Trophy, Users, BarChart2, StickyNote, Swords, Calendar, Target, Medal, MessageSquare,
-  Download, MapPin
+  Download, MapPin,ShieldCheck 
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
+
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -65,6 +66,7 @@ export default function Navbar() {
     { href: '/timeline',  label: t('nav.timeline'),    icon: Calendar   },
     { href: '/map',       label: t('nav.map'),         icon: MapPin     },
     { href: '/saved',     label: t('nav.saved'),       icon: Bookmark   },
+    { href: '/fact-check', label: t('nav.factCheck'),   icon: ShieldCheck },
   ]
 
   const MOBILE_MENU_LINKS = [
@@ -74,6 +76,7 @@ export default function Navbar() {
     { href: '/challenge', label: t('nav.challenge'),   icon: Target     },
     { href: '/debate',    label: t('nav.debate'),      icon: Swords     },
     { href: '/timeline',  label: t('nav.timeline'),    icon: Calendar   },
+    { href: '/fact-check', label: t('nav.factCheck'),   icon: ShieldCheck },
   ]
 
   const handleSignOut = async () => {
