@@ -50,55 +50,55 @@ Whether you're exploring localized news on an interactive map, translating break
 
 ## 📸 Feature Gallery
 
-<div align="center">
+
 
 ### 📰 News Feed — Today's Briefing
-<img src="./public/screenshots/ss-feed.png" alt="News Feed" width="100%">
+
 
 ---
 
 ### 🤖 AI Chat Interface
-<img src="./public/screenshots/ss-ai.png" alt="AI Chat" width="100%">
+
 
 ---
 
 ### ⚖️ Debate Mode
-<img src="./public/screenshots/ss-debate.png" alt="Debate Mode" width="100%">
+
 
 ---
 
 ### 🛡️ Fact Check Tool
-<img src="./public/screenshots/ss-factcheck.png" alt="Fact Check" width="100%">
+
 
 ---
 
 ### 🗺️ Spatial News Map (Leaflet.js)
-<img src="./public/screenshots/ss-map.png" alt="News Map" width="100%">
+
 
 ---
 
 ### ⚔️ Daily Challenge
-<img src="./public/screenshots/ss-challenge.png" alt="Daily Challenge" width="100%">
+
 
 ---
 
 ### ⏳ News Timeline
-<img src="./public/screenshots/ss-timeline.png" alt="News Timeline" width="100%">
+
 
 ---
 
 ### 🏆 Badges & Achievements
-<img src="./public/screenshots/ss-badges.png" alt="Badges" width="100%">
+
 
 ---
 
 ### 🤝 Community Feed
-<img src="./public/screenshots/ss-community.png" alt="Community" width="100%">
+
 
 ---
 
 ### 📊 Analytics Dashboard
-<img src="./public/screenshots/ss-analytics.png" alt="Analytics Dashboard" width="100%">
+
 
 </div>
 
