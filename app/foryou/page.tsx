@@ -415,7 +415,7 @@ function ForYouContent() {
       {/* Floating Compare Bar */}
       {!isCompareMode && compareList.length > 0 && (
         <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl border border-accent-purple/40 backdrop-blur-md shadow-glow-purple"
+          className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-3 px-5 py-3 rounded-2xl border border-accent-purple/40 backdrop-blur-md shadow-glow-purple"
           style={{ background: 'rgba(10,10,30,0.92)' }}
         >
           <GitCompare size={16} className="text-accent-purple" />

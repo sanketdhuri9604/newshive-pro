@@ -246,7 +246,7 @@ export default function SavedPage() {
 
       {/* ✅ Floating Compare Bar */}
       {compareList.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl border border-accent-purple/40 shadow-glow-purple backdrop-blur-md"
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-3 px-5 py-3 rounded-2xl border border-accent-purple/40 shadow-glow-purple backdrop-blur-md"
           style={{ background: 'rgba(10,10,30,0.92)' }}>
           <GitCompare size={16} className="text-accent-purple" />
           <span className="text-sm text-text-primary font-medium">
